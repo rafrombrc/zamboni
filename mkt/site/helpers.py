@@ -38,10 +38,8 @@ def market_button(context, product, receipt_type=None):
             purchased = faked_purchase = True
         classes = ['button', 'product']
         label = product.get_price()
-        product_dict = product_as_dict(request, product, purchased=purchased,
-                                       receipt_type=receipt_type)
+
         data_attrs = {
-            'product': json.dumps(product_dict, cls=JSONEncoder),
             'manifestUrl': product.manifest_url
         }
         if product.is_premium() and product.premium:
@@ -123,7 +121,7 @@ def product_as_dict_theme(request, product):
 def market_tile(context, product):
     request = context['request']
     if product.is_webapp():
-        classes = ['product', 'mkt-tile', 'arrow']
+        classes = ['product', 'mkt-tile']
         product_dict = product_as_dict(request, product)
         data_attrs = {
             'product': json.dumps(product_dict, cls=JSONEncoder),
@@ -131,7 +129,7 @@ def market_tile(context, product):
         }
         if product.is_premium() and product.premium:
             classes.append('premium')
-        c = dict(product=product, data_attrs=data_attrs,
+        c = dict(request=request, product=product, data_attrs=data_attrs,
                  classes=' '.join(classes))
         t = env.get_template('site/tiles/app.html')
         return jinja2.Markup(t.render(c))
