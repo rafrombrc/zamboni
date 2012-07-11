@@ -95,7 +95,6 @@ CSS = {
         'css/mkt/support.less',
         'css/mkt/account.less',
         'css/mkt/account-purchases.less',
-        'css/mkt/home.less',
         'css/mkt/login.less',
         'css/mkt/purchase.less',
         'css/devreg/l10n.less',
