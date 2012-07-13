@@ -34,40 +34,9 @@
   </section>
   {{ notification(product, amo, is_dev) }}
 {% else %}
-  <section class="product-details listing">
+  <section class="product-details listing expanded">
     {{ market_tile(product) }}
-    <div class="actions">
-      {% if is_dev %}
-        <p><a href="{{ product.get_dev_url() }}" class="button manage wide">
-          {{ _('Manage') }}</a></p>
-      {% endif %}
-      {% if is_reviewer %}
-        <p><a href="{{ url('reviewers.apps.review', product.app_slug) }}"
-              class="button good reviewer" target="_blank">
-          {% if product.is_pending() %}{{ _('Approve / Reject') }}{% else %}{{ _('Review History') }}{% endif %}</a></p>
-      {% endif %}
-    </div>
   </section>
-  {% if product.all_previews %}
-    <section class="previews slider full">
-      <div class="alt-slider">
-        <div class="controls">
-          <a href="#" class="prev-page"></a>
-          <a href="#" class="next-page"></a>
-        </div>
-        <ul class="content">
-          {%- for preview in product.all_previews -%}
-            <li>
-              <a class="screenshot thumbnail arrow{{ ' video' if preview.filetype == 'video/webm' }}"
-                 href="{{ preview.image_url }}" title="{{ preview.caption }}">
-                <div class="img" style="background-image:url({{ preview.thumbnail_url }})"></div>
-              </a>
-            </li>
-          {%- endfor -%}
-        </ul>
-      </div>
-    </section>
-  {% endif %}
 
   {{ notification(product, amo, is_dev) }}
 
@@ -97,6 +66,21 @@
   </section>
   <div id="purchased-message"></div>
 
+  <section class="infobox">
+    <div class="actions">
+      {% if is_dev %}
+        <p><a href="{{ product.get_dev_url() }}" class="button manage wide">
+          {{ _('Manage') }}</a></p>
+      {% endif %}
+      {% if is_reviewer %}
+        <p><a href="{{ url('reviewers.apps.review', product.app_slug) }}"
+              class="button good reviewer" target="_blank">
+          {% if product.is_pending() %}{{ _('Approve / Reject') }}{% else %}{{ _('Review History') }}{% endif %}</a></p>
+      {% endif %}
+    </div>
+  </section>
+
+
   <section class="description infobox full">
     <div>
       <p class="summary">
@@ -119,9 +103,9 @@
     </div>
   </section>
 
-  <section class="reviews c infobox full">
-    <div id="reviews">
-      {% if waffle.switch('ratings') %}
+  {% if waffle.switch('ratings') %}
+    <section class="reviews c infobox full">
+      <div id="reviews">
         {% if reviews %}
           <a class="overall-reviews average-rating arrow fatbutton"
              href="{{ product.get_ratings_url() }}">
@@ -143,9 +127,9 @@
         {% elif not reviews %}
           <p class="not-rated">{{ _('This app is not yet rated.') }}</p>
         {% endif %}
-      {% endif %}
-    </div>
-  </section>
+      </div>
+    </section>
+  {% endif %}
   <section class="infobox full">
     <div>
       <ul class="c">

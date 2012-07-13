@@ -77,6 +77,18 @@ def product_as_dict(request, product, purchased=None, receipt_type=None):
         'iconUrl': product.get_icon_url(64)
     }
 
+    # Add in previews to the dict.
+    if product.all_previews:
+        previews = []
+        for p in product.all_previews:
+            previews.append({
+                'fullUrl': p.image_url,
+                'type': p.filetype,
+                'caption': p.caption,
+                'thumbUrl': p.thumbnail_url,
+            })
+        ret.update({'previews': previews})
+
     if product.is_premium() and product.premium:
         ret.update({
             'price': product.premium.get_price() or '0',
@@ -92,7 +104,7 @@ def product_as_dict(request, product, purchased=None, receipt_type=None):
             ret['isPurchased'] = purchased
     # Jinja2 escape everything except this whitelist so that bool is retained
     # for the JSON encoding.
-    wl = ('isPurchased', 'price', 'currencies')
+    wl = ('isPurchased', 'price', 'currencies', 'previews')
     return dict([k, jinja2.escape(v) if k not in wl else v]
                 for k, v in ret.items())
 

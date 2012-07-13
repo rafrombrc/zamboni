@@ -227,6 +227,7 @@ JS = {
         'js/mkt/detail.js',
         'js/mkt/lightbox.js',
         'js/mkt/reviewsparks.js',
+        'js/mkt/previews.js',
 
         # Ratings.
         'js/common/ratingwidget.js',
