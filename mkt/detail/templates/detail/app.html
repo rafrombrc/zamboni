@@ -107,7 +107,19 @@
     <section class="reviews c infobox full">
       <div id="reviews">
         {% if reviews %}
-          <a class="overall-reviews average-rating arrow fatbutton"
+          <dl>
+          {% for review in reviews %}
+            <dt>
+              {{ review.rating|float|stars }}
+              {% trans user_url=review.user.get_url_path(),
+                       user_name=review.user.name %}
+                by <a href="{{ user_url }}">{{ user_name }}</a>
+              {% endtrans %}
+            </dt>
+            <dd>{{ review.body|nl2br }}</dd>
+          {% endfor %}
+          </dl>
+          <a class="overall-reviews average-rating fatbutton"
              href="{{ product.get_ratings_url() }}">
             <span>
               {% trans cnt=product.total_reviews,
@@ -119,17 +131,13 @@
             </span>
             {{ product.average_rating|float|stars }}
           </a>
-        {% endif %}
-        {% if can_review %}
-          <a class="overall-reviews arrow fatbutton" id="add-first-review"
-             href="{{ product.get_ratings_url('add') }}">
-            {{ _('Submit a Review') }}</a>
         {% elif not reviews %}
           <p class="not-rated">{{ _('This app is not yet rated.') }}</p>
         {% endif %}
       </div>
     </section>
   {% endif %}
+
   <section class="infobox full">
     <div>
       <ul class="c">

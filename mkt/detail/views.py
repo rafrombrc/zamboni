@@ -27,7 +27,7 @@ def detail(request, addon):
     """Product details page."""
     ctx = {
         'product': addon,
-        'reviews': Review.objects.latest().filter(addon=addon),
+        'reviews': Review.objects.latest().filter(addon=addon)[:2],
     }
     if addon.is_public():
         ctx['abuse_form'] = AbuseForm(request=request)
@@ -69,7 +69,6 @@ def abuse_recaptcha(request, addon):
     else:
         return jingo.render(request, 'detail/abuse_recaptcha.html',
                             {'product': addon, 'abuse_form': form})
-
 
 
 @login_required

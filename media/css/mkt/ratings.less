@@ -253,8 +253,11 @@ header.product {
         display: none;
     }
     span {
-        color: @green;
+        color: @text;
         vertical-align: middle;
+        &:first-child {
+            padding-right: 4px;
+        }
     }
     &:hover span {
         text-decoration: none;
