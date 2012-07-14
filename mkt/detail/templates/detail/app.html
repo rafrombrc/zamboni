@@ -67,10 +67,10 @@
   <div id="purchased-message"></div>
 
   <section class="infobox">
-    <div class="actions">
+    <div class="actions wide">
       {% if is_dev %}
-        <p><a href="{{ product.get_dev_url() }}" class="button manage wide">
-          {{ _('Manage') }}</a></p>
+        <p><a href="{{ product.get_dev_url() }}" class="button manage"
+              target="_blank">{{ _('Manage') }}</a></p>
       {% endif %}
       {% if is_reviewer %}
         <p><a href="{{ url('reviewers.apps.review', product.app_slug) }}"
