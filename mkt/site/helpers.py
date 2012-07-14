@@ -130,7 +130,7 @@ def product_as_dict_theme(request, product):
 
 @jinja2.contextfunction
 @register.function
-def market_tile(context, product):
+def market_tile(context, product, link=True):
     request = context['request']
     if product.is_webapp():
         classes = ['product', 'mkt-tile']
@@ -142,7 +142,7 @@ def market_tile(context, product):
         if product.is_premium() and product.premium:
             classes.append('premium')
         c = dict(request=request, product=product, data_attrs=data_attrs,
-                 classes=' '.join(classes))
+                 classes=' '.join(classes), link=link)
         t = env.get_template('site/tiles/app.html')
         return jinja2.Markup(t.render(c))
 
@@ -153,7 +153,7 @@ def market_tile(context, product):
             'product': json.dumps(product_dict, cls=JSONEncoder),
         }
         c = dict(product=product, data_attrs=data_attrs,
-                 classes=' '.join(classes))
+                 classes=' '.join(classes), link=link)
         t = env.get_template('site/tiles/theme.html')
         return jinja2.Markup(t.render(c))
 
