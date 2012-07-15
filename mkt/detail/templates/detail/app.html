@@ -20,181 +20,182 @@
 {% set first_cat = cats[0] if cats else None %}
 
 {% block content %}
+  <h1 id="top">{{ _('Details') }}</h1>
   {% include 'purchase/error.html' %}
   {{ mkt_breadcrumbs(items=[(url('browse.apps'), _('Apps')),
                             (None, product.name)]) }}
-{% if not (is_dev or is_admin) and not product.is_public() %}
-  <section class="product-details">
-    <h1>
-      {% if 'id' in request.GET %}
-        <b class="num">#{{ product.id }}</b>
-      {% endif %}
-      {{ product.name }}
-    </h1>
-  </section>
-  {{ notification(product, amo, is_dev) }}
-{% else %}
-  <section class="product-details listing expanded">
-    {{ market_tile(product, link=False) }}
-  </section>
-
-  {{ notification(product, amo, is_dev) }}
-
-  <section id="installed">
-    <div>
-      <p>
-        {{ _('Installed!') }}
-      </p>
-      <p class="how mac">
-        {% trans %}
-          Launch this app from your <b>Applications</b> directory.
-        {% endtrans %}
-      </p>
-      <p class="how windows">
-        {% trans %}
-          Launch this app from your <b>Windows desktop</b> or
-          <b>Start &#9658; All Programs</b>.
-        {% endtrans %}
-      </p>
-      <p class="how linux">
-        {% trans %}
-          Launch this app from your <b>Dash</b>, <b>Application picker</b>,
-          or <b>Applications menu</b>.
-        {% endtrans %}
-      </p>
-    </div>
-  </section>
-  <div id="purchased-message"></div>
-
-  <section class="infobox">
-    <div class="actions wide">
-      {% if is_dev %}
-        <p><a href="{{ product.get_dev_url() }}" class="button manage"
-              target="_blank">{{ _('Manage') }}</a></p>
-      {% endif %}
-      {% if is_reviewer %}
-        <p><a href="{{ url('reviewers.apps.review', product.app_slug) }}"
-              class="button good reviewer" target="_blank">
-          {% if product.is_pending() %}{{ _('Approve / Reject') }}{% else %}{{ _('Review History') }}{% endif %}</a></p>
-      {% endif %}
-    </div>
-  </section>
-
-
-  <section class="description infobox full">
-    <div>
-      <p class="summary">
-        {{ product.summary|nl2br }}
-        {% if product.description %}
-          <a href="#" class="collapse narrow">{{ _('More&hellip;') }}</a>
+  {% if not (is_dev or is_admin) and not product.is_public() %}
+    <section class="product-details">
+      <h1>
+        {% if 'id' in request.GET %}
+          <b class="num">#{{ product.id }}</b>
         {% endif %}
-      </p>
-      {% if product.description or product.developer_comments %}
-        <div class="collapse">
-          {% if product.description %}
-            <div class="more">{{ product.description|nl2br }}</div>
-          {% endif %}
-          {% if product.developer_comments %}
-            <h3>{{ _('Developer Comments') }}</h3>
-            <div class="developer-comments">{{ product.developer_comments }}</div>
-          {% endif %}
-        </div>
-      {% endif %}
-    </div>
-  </section>
+        {{ product.name }}
+      </h1>
+    </section>
+    {{ notification(product, amo, is_dev) }}
+  {% else %}
+    <section class="product-details listing expanded">
+      {{ market_tile(product, link=False) }}
+    </section>
 
-  {% if waffle.switch('ratings') %}
-    <section class="reviews c infobox full">
-      <div id="reviews">
-        {% if reviews %}
-          <dl>
-          {% for review in reviews %}
-            <dt>
-              {{ review.rating|float|stars }}
-              {% trans user_url=review.user.get_url_path(),
-                       user_name=review.user.name %}
-                by <a href="{{ user_url }}">{{ user_name }}</a>
-              {% endtrans %}
-            </dt>
-            <dd>{{ review.body|nl2br }}</dd>
-          {% endfor %}
-          </dl>
-          <a class="overall-reviews average-rating fatbutton"
-             href="{{ product.get_ratings_url() }}">
-            <span>
-              {% trans cnt=product.total_reviews,
-                       num=product.total_reviews|numberfmt %}
-                {{ num }} review
-              {% pluralize %}
-                {{ num }} reviews
-              {% endtrans %}
-            </span>
-            {{ product.average_rating|float|stars }}
-          </a>
-        {% elif not reviews %}
-          <p class="not-rated">{{ _('This app is not yet rated.') }}</p>
+    {{ notification(product, amo, is_dev) }}
+
+    <section id="installed">
+      <div>
+        <p>
+          {{ _('Installed!') }}
+        </p>
+        <p class="how mac">
+          {% trans %}
+            Launch this app from your <b>Applications</b> directory.
+          {% endtrans %}
+        </p>
+        <p class="how windows">
+          {% trans %}
+            Launch this app from your <b>Windows desktop</b> or
+            <b>Start &#9658; All Programs</b>.
+          {% endtrans %}
+        </p>
+        <p class="how linux">
+          {% trans %}
+            Launch this app from your <b>Dash</b>, <b>Application picker</b>,
+            or <b>Applications menu</b>.
+          {% endtrans %}
+        </p>
+      </div>
+    </section>
+    <div id="purchased-message"></div>
+
+    <section class="infobox">
+      <div class="actions wide">
+        {% if is_dev %}
+          <p><a href="{{ product.get_dev_url() }}" class="button manage"
+                target="_blank">{{ _('Manage') }}</a></p>
+        {% endif %}
+        {% if is_reviewer %}
+          <p><a href="{{ url('reviewers.apps.review', product.app_slug) }}"
+                class="button good reviewer" target="_blank">
+            {% if product.is_pending() %}{{ _('Approve / Reject') }}{% else %}{{ _('Review History') }}{% endif %}</a></p>
         {% endif %}
       </div>
     </section>
+
+
+    <section class="description infobox full">
+      <div>
+        <p class="summary">
+          {{ product.summary|nl2br }}
+          {% if product.description %}
+            <a href="#" class="collapse narrow">{{ _('More&hellip;') }}</a>
+          {% endif %}
+        </p>
+        {% if product.description or product.developer_comments %}
+          <div class="collapse">
+            {% if product.description %}
+              <div class="more">{{ product.description|nl2br }}</div>
+            {% endif %}
+            {% if product.developer_comments %}
+              <h3>{{ _('Developer Comments') }}</h3>
+              <div class="developer-comments">{{ product.developer_comments }}</div>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </section>
+
+    {% if waffle.switch('ratings') %}
+      <section class="reviews c infobox full">
+        <div id="reviews">
+          {% if reviews %}
+            <dl>
+            {% for review in reviews %}
+              <dt>
+                {{ review.rating|float|stars }}
+                {% trans user_url=review.user.get_url_path(),
+                         user_name=review.user.name %}
+                  by <a href="{{ user_url }}">{{ user_name }}</a>
+                {% endtrans %}
+              </dt>
+              <dd>{{ review.body|nl2br }}</dd>
+            {% endfor %}
+            </dl>
+            <a class="overall-reviews average-rating fatbutton"
+               href="{{ product.get_ratings_url() }}">
+              <span>
+                {% trans cnt=product.total_reviews,
+                         num=product.total_reviews|numberfmt %}
+                  {{ num }} review
+                {% pluralize %}
+                  {{ num }} reviews
+                {% endtrans %}
+              </span>
+              {{ product.average_rating|float|stars }}
+            </a>
+          {% elif not reviews %}
+            <p class="not-rated">{{ _('This app is not yet rated.') }}</p>
+          {% endif %}
+        </div>
+      </section>
+    {% endif %}
+
+    <section class="infobox full">
+      <div>
+        <ul class="c">
+          {% if False %}
+            {# TODO: Link to Request Support page if I've purchased (up front or in-app). What about for free?
+                     https://bugzilla.mozilla.org/show_bug.cgi?id=760287 #}
+            <li><a href="" class="arrow">{{ _('Support') }}</a></li>
+          {% endif %}
+          {% if product.support_email %}
+            <li class="support-email">
+              {{ emaillink(product.support_email.localized_string,
+                           _('Support Email')) }}
+            </li>
+          {% endif %}
+          {% if product.support_url %}
+            <li class="support-url">
+              <a href="{{ product.support_url|external_url }}">
+                {{ _('Support Site') }}</a>
+            </li>
+          {% endif %}
+          {% if product.homepage %}
+            <li><a href="{{ product.homepage|external_url }}">{{ _('Homepage') }}</a></li>
+          {% endif %}
+          {% if product.is_public() or is_reviewer %}
+            {% if product.privacy_policy %}
+              <li><a href="{{ product.get_detail_url('privacy') }}">
+                {{ _('Privacy Policy') }}</a></li>
+            {% endif %}
+            {% if waffle.switch('app-stats') and product.public_stats %}
+              <li><a href="{{ url('mkt.stats.overview', product.app_slug) }}">
+                {{ _('Statistics') }}</a></li>
+            {% endif %}
+          {% endif %}
+          {% if abuse_form %}
+            <li><a href="{{ product.get_detail_url('abuse') }}">
+              {{ _('Report Abuse') }}</a></li>
+          {% endif %}
+        </ul>
+        {% set upsell = product.upsell %}
+        {% if upsell %}
+          {% set prm = upsell.premium_addon %}
+          {% if prm %}
+            <a id="upsell" class="narrow"
+               href="{{ prm.get_url_path()|urlparams(src='mkt-detail-upsell') }}">
+               <span class="avail">{{ _('Premium version available') }}</span>
+               <img class="icon" src="{{ prm.get_icon_url(16) }}">
+               <span class="name">{{ prm.name }}</span>
+            </a>
+          {% endif %}
+        {% endif %}
+
+        <dl class="narrow">
+          <dt>{{ _('Published') }}</dt>
+          <dd>{{ product.created|timelabel }}</dd>
+        </dl>
+      </div>
+    </section>
+
   {% endif %}
-
-  <section class="infobox full">
-    <div>
-      <ul class="c">
-        {% if False %}
-          {# TODO: Link to Request Support page if I've purchased (up front or in-app). What about for free?
-                   https://bugzilla.mozilla.org/show_bug.cgi?id=760287 #}
-          <li><a href="" class="arrow">{{ _('Support') }}</a></li>
-        {% endif %}
-        {% if product.support_email %}
-          <li class="support-email">
-            {{ emaillink(product.support_email.localized_string,
-                         _('Support Email')) }}
-          </li>
-        {% endif %}
-        {% if product.support_url %}
-          <li class="support-url">
-            <a href="{{ product.support_url|external_url }}">
-              {{ _('Support Site') }}</a>
-          </li>
-        {% endif %}
-        {% if product.homepage %}
-          <li><a href="{{ product.homepage|external_url }}">{{ _('Homepage') }}</a></li>
-        {% endif %}
-        {% if product.is_public() or is_reviewer %}
-          {% if product.privacy_policy %}
-            <li><a href="{{ product.get_detail_url('privacy') }}">
-              {{ _('Privacy Policy') }}</a></li>
-          {% endif %}
-          {% if waffle.switch('app-stats') and product.public_stats %}
-            <li><a href="{{ url('mkt.stats.overview', product.app_slug) }}">
-              {{ _('Statistics') }}</a></li>
-          {% endif %}
-        {% endif %}
-        {% if abuse_form %}
-          <li><a href="{{ product.get_detail_url('abuse') }}">
-            {{ _('Report Abuse') }}</a></li>
-        {% endif %}
-      </ul>
-      {% set upsell = product.upsell %}
-      {% if upsell %}
-        {% set prm = upsell.premium_addon %}
-        {% if prm %}
-          <a id="upsell" class="narrow"
-             href="{{ prm.get_url_path()|urlparams(src='mkt-detail-upsell') }}">
-             <span class="avail">{{ _('Premium version available') }}</span>
-             <img class="icon" src="{{ prm.get_icon_url(16) }}">
-             <span class="name">{{ prm.name }}</span>
-          </a>
-        {% endif %}
-      {% endif %}
-
-      <dl class="narrow">
-        <dt>{{ _('Published') }}</dt>
-        <dd>{{ product.created|timelabel }}</dd>
-      </dl>
-    </div>
-  </section>
-
-{% endif %}
 {% endblock %}
