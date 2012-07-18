@@ -1,6 +1,6 @@
 <form class="go" id="lang-form" method="get">
-  <label for="language">{{ _('Other languages') }}:</label>
-  <select id="language" name="lang" dir="ltr">
+  <label for="language">{{ _('Language') }}:</label>
+  <select id="language" name="lang" dir="ltr" class="hmm">
     {% for code, name in LANGUAGES|dictsort -%}
       <option value="{{ code }}"{% if code == LANG|lower %} selected{% endif %}>
         {{ name }}</option>
