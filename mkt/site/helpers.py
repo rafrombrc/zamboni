@@ -7,7 +7,7 @@ import waffle
 
 from amo.helpers import urlparams
 from amo.urlresolvers import reverse
-from amo.utils import JSONEncoder
+from amo.utils import escape_all, JSONEncoder
 from translations.helpers import truncate
 
 
@@ -102,11 +102,7 @@ def product_as_dict(request, product, purchased=None, receipt_type=None):
             ret['currencies'] = json.dumps(currencies_dict, cls=JSONEncoder)
         if request.amo_user:
             ret['isPurchased'] = purchased
-    # Jinja2 escape everything except this whitelist so that bool is retained
-    # for the JSON encoding.
-    wl = ('isPurchased', 'price', 'currencies', 'previews')
-    return dict([k, jinja2.escape(v) if k not in wl else v]
-                for k, v in ret.items())
+    return escape_all(ret)
 
 
 def product_as_dict_theme(request, product):
