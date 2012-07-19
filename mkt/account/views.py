@@ -214,6 +214,10 @@ def account_settings(request):
                         {'form': form, 'amouser': amo_user})
 
 
+def account_about(request):
+    return jingo.render(request, 'account/about.html')
+
+
 @write
 @login_required
 @permission_required('Users', 'Edit')
@@ -277,4 +281,5 @@ def profile(request, username):
 @login_required
 def activity_log(request, userid):
     all_apps = request.amo_user.addons.filter(type=amo.ADDON_WEBAPP)
-    return jingo.render(request, 'account/activity.html', {'log': _get_items(None, all_app)})
+    return jingo.render(request, 'account/activity.html',
+                        {'log': _get_items(None, all_apps)})
