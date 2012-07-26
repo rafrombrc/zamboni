@@ -2,15 +2,12 @@
   <section>
     {% if request.can_view_consumer %}
     <nav role="navigation">
-      <a href="{{ url('home') }}" class="header-button home"><b></b></a>
-      <a href="{{ url('account.settings') }}" class="header-button settings"><b></b></a>
-      <a href="#" class="header-button back"><b></b></a>
-      <a href="#" class="header-button search"><b></b></a>
-      <a href="#" class="header-button cancel">&times;</a>
-      <a href="#" class="header-button filter">{{ _('Filter') }}</a>
-      <a href="{{ url('users.logout') }}" class="header-button logout">
-        {{ _('Sign out') }}
-      </a>
+      <a href="{{ url('home') }}" class="header-button icon home left">home</a>
+      <a href="{{ url('account.settings') }}" class="header-button icon settings left">settings</a>
+      <a href="#" class="header-button icon back left">back</a>
+      <a href="#" class="header-button icon search right">search</a>
+      <a href="#" class="header-button icon cancel right">cancel</a>
+      <a href="#" class="header-button filter right">{{ _('Filter') }}</a>
       {% block search %}
         {% set data = {'cat': category.id} if category else request.GET %}
         {% set search_form = SimpleSearchForm(data) %}
@@ -30,4 +27,3 @@
     {% endif %}
   </section>
 </header>
-<div class="overlay nav-overlay"></div>
