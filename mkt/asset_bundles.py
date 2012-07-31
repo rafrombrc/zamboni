@@ -23,6 +23,7 @@ CSS = {
         'css/devreg/buttons.less',
 
         # Popups, Modals, Tooltips.
+        'css/mkt/overlay.less',
         'css/devreg/devhub-popups.less',
         'css/mkt/device.less',
         'css/devreg/tooltips.less',
@@ -140,6 +141,7 @@ JS = {
         'js/zamboni/storage.js',
         'js/zamboni/tabs.js',
         'js/impala/serializers.js',
+        'js/mkt/utils.js',
 
         # jQuery UI.
         'js/lib/jquery-ui/jquery.ui.core.js',

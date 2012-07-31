@@ -989,6 +989,10 @@ class TestPayments(TestSubmit):
                                  get_permissions_token):
         self.webapp.update(premium_type=amo.ADDON_PREMIUM,
                            paypal_id='a@a.com')
+        session = self.client.session
+        session['unconfirmed_paypal_id'] = self.webapp.paypal_id
+        session.save()
+
         get_permissions_token.return_value = 'foo'
         get_personal_data.return_value = {'email': 'a@a.com'}
         res = self.client.get(self.get_acquire_url())
@@ -1022,10 +1026,14 @@ class TestPayments(TestSubmit):
                                  get_permissions_token):
         self.webapp.update(premium_type=amo.ADDON_PREMIUM,
                            paypal_id='b@b.com')
+        session = self.client.session
+        session['unconfirmed_paypal_id'] = self.webapp.paypal_id
+        session.save()
+
         get_permissions_token.return_value = 'foo'
         get_personal_data.return_value = {'email': 'a@a.com'}
         res = self.client.get(self.get_acquire_url())
-        self.assertRedirects(res, self.get_url('payments.paypal'))
+        self.assertRedirects(res, self.get_url('payments'))
 
     @mock.patch('paypal.get_permissions_token')
     def test_bounce_result_fails_paypal_error(self, get_permissions_token):

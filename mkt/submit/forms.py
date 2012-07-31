@@ -3,7 +3,7 @@ import datetime
 from django import forms
 
 import happyforms
-from tower import ugettext_lazy as _lazy
+from tower import ugettext as _, ugettext_lazy as _lazy
 
 from addons.forms import AddonFormBasic
 from addons.models import Addon, AddonUpsell
@@ -16,8 +16,7 @@ from market.models import AddonPremium, Price
 from translations.widgets import TransInput, TransTextarea
 from translations.fields import TransField
 
-from mkt.developers.forms import (PaypalSetupForm as OriginalPaypalSetupForm,
-                                  verify_app_domain)
+from mkt.developers.forms import verify_app_domain
 from mkt.site.forms import (AddonChoiceField, APP_UPSELL_CHOICES,
                             APP_PUBLIC_CHOICES)
 
@@ -53,14 +52,24 @@ class NewWebappForm(happyforms.Form):
         return upload
 
 
-class PaypalSetupForm(OriginalPaypalSetupForm):
+class PaypalSetupForm(happyforms.Form):
+    business_account = forms.ChoiceField(widget=forms.RadioSelect, choices=[],
+        label=_(u'Do you already have a PayPal Premier or Business account?'))
+    email = forms.EmailField(required=False, label=_(u'PayPal email address'))
 
     def __init__(self, *args, **kw):
         super(PaypalSetupForm, self).__init__(*args, **kw)
-        self.fields['business_account'].choices = (
-                ('yes', _lazy(u'Yes')),
-                ('no', _lazy(u'No')),
-                ('later', _lazy(u"I'll link my PayPal account later.")))
+        self.fields['business_account'].choices = (('yes', _lazy('Yes')),
+            ('no', _lazy('No')),
+            ('later', _lazy(u"I'll link my PayPal account later.")))
+
+    def clean(self):
+        data = self.cleaned_data
+        if data.get('business_account') == 'yes' and not data.get('email'):
+            msg = _(u'The PayPal email is required.')
+            self._errors['email'] = self.error_class([msg])
+
+        return data
 
 
 class PremiumTypeForm(happyforms.Form):

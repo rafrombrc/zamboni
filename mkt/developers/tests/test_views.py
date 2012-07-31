@@ -189,7 +189,6 @@ class TestAppDashboard(AppHubTest):
             expected = [
                 ('Manage Developer Profile', app.get_dev_url('profile')),
                 ('Manage In-App Payments', app.get_dev_url('in_app_config')),
-                ('Manage PayPal', app.get_dev_url('paypal_setup')),
                 ('Manage Refunds', app.get_dev_url('refunds')),
                 ('Manage Status', app.get_dev_url('versions')),
             ]
@@ -391,6 +390,9 @@ class TestPaymentsProfile(amo.tests.TestCase):
 class MarketplaceMixin(object):
 
     def setUp(self):
+        waffle.models.Switch.objects.get_or_create(name='currencies',
+                                                   active=True)
+
         self.addon = Addon.objects.get(id=337141)
         self.addon.update(status=amo.STATUS_NOMINATED,
             highest_status=amo.STATUS_NOMINATED)
@@ -420,6 +422,10 @@ class MarketplaceMixin(object):
         self.addon.update(premium_type=amo.ADDON_PREMIUM,
                           paypal_id='a@a.com')
 
+        session = self.client.session
+        session['unconfirmed_paypal_id'] = self.addon.paypal_id
+        session.save()
+
 
 # Mock out verifying the paypal id has refund permissions with paypal and
 # that the account exists on paypal.
@@ -427,16 +433,14 @@ class MarketplaceMixin(object):
 @mock.patch('mkt.developers.forms.PremiumForm.clean',
              new=lambda x: x.cleaned_data)
 class TestMarketplace(MarketplaceMixin, amo.tests.TestCase):
-    fixtures = ['base/users', 'webapps/337141-steamcube']
+    fixtures = ['base/users', 'webapps/337141-steamcube', 'market/prices']
 
     def get_data(self, **kw):
         data = {
             'price': self.price.pk,
             'free': self.other_addon.pk,
-            'do_upsell': 1,
             'text': 'some upsell',
             'premium_type': amo.ADDON_PREMIUM,
-            'support_email': 'c@c.com',
         }
         data.update(kw)
         return data
@@ -449,14 +453,28 @@ class TestMarketplace(MarketplaceMixin, amo.tests.TestCase):
 
     def test_set(self):
         self.setup_premium()
-        res = self.client.post(self.url, data={
-            'support_email': 'c@c.com',
-            'price': self.price_two.pk,
-            'premium_type': amo.ADDON_PREMIUM
-        })
+        res = self.client.post(self.url, data=self.get_data(price=self.
+                                                            price_two.pk))
         eq_(res.status_code, 302)
         self.addon = Addon.objects.get(pk=self.addon.pk)
         eq_(self.addon.addonpremium.price, self.price_two)
+
+    def test_set_currency(self):
+        self.setup_premium()
+        res = self.client.post(self.url,
+                               data=self.get_data(currencies=['EUR', 'BRL']))
+        eq_(res.status_code, 302)
+        self.addon = Addon.objects.get(pk=self.addon.pk)
+        eq_(self.addon.premium.currencies, ['EUR', 'BRL'])
+
+    def test_set_currency_fail(self):
+        self.setup_premium()
+        res = self.client.post(self.url,
+                               data=self.get_data(currencies=['EUR', 'LOL']))
+        eq_(res.status_code, 200)
+        self.assertFormError(res, 'form', 'currencies',
+                              [u'Select a valid choice. '
+                                'LOL is not one of the available choices.'])
 
     def test_set_upsell(self):
         self.setup_premium()
@@ -494,7 +512,7 @@ class TestMarketplace(MarketplaceMixin, amo.tests.TestCase):
         upsell = AddonUpsell.objects.create(free=self.other_addon,
                                             premium=self.addon)
         eq_(self.addon._upsell_to.all()[0], upsell)
-        self.client.post(self.url, data=self.get_data(do_upsell=0))
+        self.client.post(self.url, data=self.get_data(free=''))
         eq_(len(self.addon._upsell_to.all()), 0)
 
     def test_change_upsell(self):
@@ -532,23 +550,26 @@ class TestMarketplace(MarketplaceMixin, amo.tests.TestCase):
     @mock.patch('paypal.get_permissions_token', lambda x, y: x.upper())
     @mock.patch('paypal.get_personal_data', lambda x: {'email': 'a@a.com'})
     def test_permissions_token(self):
+
         self.setup_premium()
         eq_(self.addon.premium.paypal_permissions_token, '')
         url = self.addon.get_dev_url('acquire_refund_permission')
         self.client.get(urlparams(url, request_token='foo',
                                        verification_code='bar'))
         self.addon = Addon.objects.get(pk=self.addon.pk)
-        eq_(self.addon.premium.paypal_permissions_token, 'FOO')
+        eq_(self.addon.premium.paypal_permissions_token.lower(), 'foo')
 
     @mock.patch('paypal.get_permissions_token', lambda x, y: x.upper())
     @mock.patch('paypal.get_personal_data', lambda x: {})
     def test_permissions_token_different_email(self):
+        # With different email, the new token overwrites the old one, and the
+        # paypal_id stays the same.
         self.setup_premium()
         url = self.addon.get_dev_url('acquire_refund_permission')
         self.client.get(urlparams(url, request_token='foo',
                                        verification_code='bar'))
         self.addon = Addon.objects.get(pk=self.addon.pk)
-        eq_(self.addon.premium.paypal_permissions_token, '')
+        eq_(self.addon.premium.paypal_permissions_token.lower(), 'foo')
 
     @mock.patch('mkt.developers.views.client')
     def test_permissions_token_solitude(self, client):
@@ -570,7 +591,7 @@ class TestMarketplace(MarketplaceMixin, amo.tests.TestCase):
         res = self.client.get(urlparams(url, request_token='foo',
                                         verification_code='bar'))
         self.assertRedirects(res,
-                             self.addon.get_dev_url('paypal_setup_bounce'))
+                             self.addon.get_dev_url('payments'))
 
 
 class TestIssueRefund(amo.tests.TestCase):

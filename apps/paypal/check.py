@@ -1,6 +1,7 @@
 import hashlib
 import logging
 import uuid
+from tower import ugettext as _
 
 import paypal
 from amo.helpers import loc
@@ -47,13 +48,13 @@ class Check(object):
         """Check that the paypal id is good."""
         test_id = 'id'
         if not self.paypal_id:
-            self.failure(test_id, loc('No PayPal id provided.'))
+            self.failure(test_id, _('No PayPal ID provided.'))
             return
 
         valid, msg = paypal.check_paypal_id(self.paypal_id)
         if not valid:
-            self.failure(test_id, loc('You do not seem to have'
-                                      ' a PayPal account.'))
+            self.failure(test_id, _('Please enter a valid email.'))
+
         else:
             self.pass_(test_id)
 
