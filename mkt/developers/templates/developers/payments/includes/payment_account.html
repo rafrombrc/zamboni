@@ -50,13 +50,15 @@
 
       </div>
     </div>
-
-    <div id="bluevia" class="indent payment-option">
-    </div>
-
-  {% else %}
-    <p>{{ _('You have not yet setup any payment providers. You will not be able to
-    receive payments until you do so.') }}</p>
   {% endif %}
+
+  {% if bluevia %}
+    {% include 'developers/payments/includes/bluevia.html' %}
+  {% endif %}
+
+  <p id="no-payment-providers" {% if addon.paypal_id or bluevia %}class="js-hidden"{% endif %}>
+    {{ _('You have not yet set up any payment providers. You will not be able to
+       receive payments until you do so.') }}
+  </p>
 
 </div>

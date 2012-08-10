@@ -1,6 +1,8 @@
+import calendar
 import json
 import os
 import sys
+import time
 import traceback
 
 from django import http
@@ -14,6 +16,7 @@ from django.views.decorators.csrf import csrf_view_exempt
 
 import commonware.log
 import jingo
+import jwt
 from session_csrf import anonymous_csrf
 from tower import ugettext_lazy as _lazy, ugettext as _
 import waffle
@@ -48,11 +51,13 @@ from translations.models import delete_translation
 from users.models import UserProfile
 from users.views import _login
 
+from mkt.constants import regions
 from mkt.developers.decorators import dev_required
 from mkt.developers.forms import (AppFormBasic, AppFormDetails, AppFormMedia,
-                                  AppFormSupport, CategoryForm, InappConfigForm,
-                                  PaypalSetupForm, PreviewFormSet, RegionForm,
-                                  trap_duplicate)
+                                  AppFormSupport, CategoryForm,
+                                  InappConfigForm, PaypalSetupForm,
+                                  PreviewFormSet, RegionForm, trap_duplicate)
+from mkt.developers.models import AddonBlueViaConfig, BlueViaConfig
 from mkt.developers.utils import check_upload
 from mkt.inapp_pay.models import InappConfig
 from mkt.webapps.tasks import update_manifests, _update_manifest
@@ -62,6 +67,7 @@ from . import forms, tasks
 
 log = commonware.log.getLogger('z.devhub')
 paypal_log = commonware.log.getLogger('z.paypal')
+bluevia_log = commonware.log.getLogger('z.bluevia')
 
 
 # We use a session cookie to make sure people see the dev agreement.
@@ -268,7 +274,7 @@ def paypal_setup(request, addon_id, addon, webapp):
 
         return {'valid': True, 'message': [], 'paypal_url': paypal_url}
 
-    return {'valid': False, 'message': [_('Form not valid')]}
+    return {'valid': False, 'message': [_('Form not valid.')]}
 
 
 def get_paypal_bounce_url(request, addon_id, addon, webapp, json_view=False):
@@ -456,6 +462,7 @@ def paypal_setup_check(request, addon_id, addon, webapp):
 
 
 @json_view
+@post_required
 @dev_required(owner_for_post=True, webapp=True)
 def paypal_remove(request, addon_id, addon, webapp):
     """
@@ -467,8 +474,83 @@ def paypal_remove(request, addon_id, addon, webapp):
                                  .safer_get_or_create(addon=addon))
         addonpremium.update(paypal_permissions_token='')
     except Exception as e:
-        return {'success': False, 'error': [e]}
-    return {'success': True, 'error': []}
+        return {'error': True, 'message': [e]}
+    return {'error': False, 'message': []}
+
+
+@json_view
+@dev_required(webapp=True)
+def get_bluevia_url(request, addon_id, addon, webapp):
+    """
+    Email choices:
+        registered_data@user.com
+        registered_no_data@user.com
+    """
+    data = {
+        'email': request.GET.get('email', request.user.email),
+        'locale': request.LANG,
+        'country': getattr(request, 'REGION', regions.US).mcc
+    }
+    if addon.paypal_id:
+        data['paypal'] = addon.paypal_id
+    issued_at = calendar.timegm(time.gmtime())
+    # JWT-specific fields.
+    data.update({
+        'aud': addon.id,  # app ID
+        'typ': 'dev-registration',
+        'iat': issued_at,
+        'exp': issued_at + 3600,  # expires in 1 hour
+        'iss': settings.SITE_URL,  # expires in 1 hour
+    })
+    signed_data = jwt.encode(data, settings.BLUEVIA_SECRET, algorithm='HS256')
+    return {'error': False, 'message': [],
+            'bluevia_origin': settings.BLUEVIA_ORIGIN,
+            'bluevia_url': settings.BLUEVIA_URL + signed_data}
+
+
+@json_view
+@post_required
+@transaction.commit_on_success
+@dev_required(owner_for_post=True, webapp=True)
+def bluevia_callback(request, addon_id, addon, webapp):
+    developer_id = request.POST.get('developerId')
+    status = request.POST.get('status')
+    if status in ['registered', 'loggedin']:
+        bluevia = BlueViaConfig.objects.create(user=request.amo_user,
+            developer_id=developer_id)
+        try:
+            (AddonBlueViaConfig.objects.get(addon=addon)
+             .update(bluevia_config=bluevia))
+        except AddonBlueViaConfig.DoesNotExist:
+            AddonBlueViaConfig.objects.create(addon=addon,
+                                              bluevia_config=bluevia)
+        bluevia_log.info('BlueVia account, %s, paired with %s app'
+                         % (developer_id, addon_id))
+    return {'error': False,
+            'message': [_('You have successfully paired your BlueVia '
+                          'account with the Marketplace.')],
+            'html': jingo.render(
+                request, 'developers/payments/includes/bluevia.html',
+                dict(addon=addon, bluevia=bluevia)).content}
+
+
+@json_view
+@post_required
+@transaction.commit_on_success
+@dev_required(owner_for_post=True, webapp=True)
+def bluevia_remove(request, addon_id, addon, webapp):
+    """
+    Unregisters BlueVia account from app.
+    """
+    try:
+        bv = AddonBlueViaConfig.objects.get(addon=addon)
+        developer_id = bv.bluevia_config.developer_id
+        bv.delete()
+        bluevia_log.info('BlueVia account, %s, removed from %s app'
+                         % (developer_id, addon_id))
+    except AddonBlueViaConfig.DoesNotExist as e:
+        return {'error': True, 'message': [str(e)]}
+    return {'error': False, 'message': []}
 
 
 @waffle_switch('in-app-payments')
@@ -556,10 +638,15 @@ def _premium(request, addon_id, addon, webapp=False):
         messages.success(request, _('Changes successfully saved.'))
         return redirect(addon.get_dev_url('payments'))
 
+    try:
+        bluevia = addon.addonblueviaconfig.bluevia_config
+    except AddonBlueViaConfig.DoesNotExist:
+        bluevia = None
+
     return jingo.render(request, 'developers/payments/premium.html',
                         dict(addon=addon, webapp=webapp, premium=addon.premium,
                              paypal_create_url=settings.PAYPAL_CGI_URL,
-                             form=premium_form))
+                             bluevia=bluevia, form=premium_form))
 
 
 @waffle_switch('allow-refund')

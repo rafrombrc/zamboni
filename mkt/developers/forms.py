@@ -33,7 +33,7 @@ from mkt.constants.ratingsbodies import (RATINGS_BY_NAME, ALL_RATINGS,
                                          RATINGS_BODIES)
 from mkt.inapp_pay.models import InappConfig
 from mkt.reviewers.models import RereviewQueue
-from mkt.site.forms import AddonChoiceField, APP_UPSELL_CHOICES
+from mkt.site.forms import AddonChoiceField
 from mkt.webapps.models import AddonExcludedRegion, ContentRating, Webapp
 
 from . import tasks
@@ -587,16 +587,11 @@ class AppFormBasic(addons.forms.AddonFormBase):
 
 
 class PaypalSetupForm(happyforms.Form):
-    business_account = forms.ChoiceField(widget=forms.RadioSelect, choices=[],
-        label=_lazy(u'Do you already have a PayPal Premier '
-                     'or Business account?'))
     email = forms.EmailField(required=False,
                              label=_lazy(u'PayPal email address'))
 
     def __init__(self, *args, **kw):
         super(PaypalSetupForm, self).__init__(*args, **kw)
-        self.fields['business_account'].choices = (('yes', _lazy(u'Yes')),
-                                                   ('no', _lazy(u'No')))
 
     def clean(self):
         data = self.cleaned_data
