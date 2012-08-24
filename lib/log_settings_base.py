@@ -114,5 +114,13 @@ def log_configure():
 
     dictconfig.dictConfig(cfg)
 
+    # logging.getLogger() accesses a singleton, this just binds
+    # in the SentryHandler to error level messages
     tastypie = logging.getLogger('django.request.tastypie')
-    tastypie.addHandler(SentryHandler())
+
+    from .metlog_shim import hook_logger
+    # Metlog needs to be loaded early
+    from metlog.config import client_from_text_config
+
+    metlog_client = client_from_text_config(settings.METLOG_CFG_TXT, 'metlog')
+    hook_logger('django.request.tastypie', metlog_client)
