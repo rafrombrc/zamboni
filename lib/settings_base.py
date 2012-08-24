@@ -69,10 +69,10 @@ DATABASES = {
     'default': {
         'NAME': 'zamboni',
         'ENGINE': 'django.db.backends.mysql',
-        'HOST': '',
+        'HOST': 'localhost',
         'PORT': '',
-        'USER': '',
-        'PASSWORD': '',
+        'USER': 'zamboni',
+        'PASSWORD': 'mypass',
         'OPTIONS': {'init_command': 'SET storage_engine=InnoDB'},
         'TEST_CHARSET': 'utf8',
         'TEST_COLLATION': 'utf8_general_ci',
@@ -1127,6 +1127,17 @@ LOGGING = {
     },
 }
 
+
+METLOG_CONF = {
+    'logger': 'zamboni',
+    'sender': {
+        'class': 'metlog.senders.StdOutSender',
+    },
+}
+
+from metlog.config import client_from_dict_config
+METLOG_CLIENT = client_from_dict_config(METLOG_CONF)
+
 CEF_PRODUCT = "amo"
 
 # CSP Settings
@@ -1490,3 +1501,6 @@ SIMULATE_NAV_PAY = False
 
 # Set this to True if you want region stores (eg: marketplace).
 REGION_STORES = False
+
+
+SITE_URL = 'http://localhost:8000'
