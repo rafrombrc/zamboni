@@ -46,3 +46,6 @@ cef==0.2
 -e git://github.com/mozilla/django-piston.git#egg=django-piston
 
 -e git://github.com/mozilla/nuggets.git#egg=nuggets
+
+# Metlog-py
+metlog-py==0.9.4
