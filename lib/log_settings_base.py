@@ -117,6 +117,4 @@ def log_configure():
     # logging.getLogger() accesses a singleton, this just binds
     # in the SentryHandler to error level messages
     tastypie = logging.getLogger('django.request.tastypie')
-
-    from .metlog_shim import hook_logger
-    hook_logger('django.request.tastypie', settings.METLOG_CLIENT)
+    tastypie.addHandler(SentryHandler())
