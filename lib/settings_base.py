@@ -1137,6 +1137,8 @@ provider=metlog_raven.raven_plugin:config_plugin
 sentry_project_id=1
 """
 
+from metlog.config import client_from_text_config
+METLOG_CLIENT = client_from_text_config(METLOG_CFG_TXT, 'metlog')
 
 CEF_PRODUCT = "amo"
 

@@ -119,8 +119,4 @@ def log_configure():
     tastypie = logging.getLogger('django.request.tastypie')
 
     from .metlog_shim import hook_logger
-    # Metlog needs to be loaded early
-    from metlog.config import client_from_text_config
-
-    metlog_client = client_from_text_config(settings.METLOG_CFG_TXT, 'metlog')
-    hook_logger('django.request.tastypie', metlog_client)
+    hook_logger('django.request.tastypie', settings.METLOG_CLIENT)
