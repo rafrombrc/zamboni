@@ -1133,10 +1133,6 @@ METLOG_CONF = {
     'sender': {
         'class': 'metlog.senders.StdOutSender',
     },
-    'plugins': {
-        'raven': ('metlog_raven.raven_plugin.config_plugin',
-                  {'sentry_project_id': 1}),
-    },
 }
 
 from metlog.config import client_from_dict_config
