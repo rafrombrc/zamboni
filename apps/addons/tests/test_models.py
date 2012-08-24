@@ -46,9 +46,10 @@ from mkt.webapps.models import Webapp
 
 
 class TestAddonManager(amo.tests.TestCase):
-    fixtures = ['addons/featured', 'addons/test_manager', 'base/collections',
-                'base/featured', 'bandwagon/featured_collections',
-                'base/addon_5299_gcal']
+    fixtures = ['base/apps', 'base/appversion', 'base/users',
+                'base/addon_3615', 'addons/featured', 'addons/test_manager',
+                'base/collections', 'base/featured',
+                'bandwagon/featured_collections', 'base/addon_5299_gcal']
 
     def setUp(self):
         set_user(None)
@@ -57,6 +58,9 @@ class TestAddonManager(amo.tests.TestCase):
         eq_(Addon.objects.featured(amo.FIREFOX).count(), 3)
 
     def test_listed(self):
+        # We need this for the fixtures, but it messes up the tests.
+        Addon.objects.get(pk=3615).update(disabled_by_user=True)
+        # No continue as normal.
         Addon.objects.filter(id=5299).update(disabled_by_user=True)
         q = Addon.objects.listed(amo.FIREFOX, amo.STATUS_PUBLIC)
         eq_(len(q.all()), 4)
@@ -207,8 +211,10 @@ class TestNewAddonVsWebapp(amo.tests.TestCase):
 
 class TestAddonModels(amo.tests.TestCase):
     fixtures = ['base/apps',
+                'base/appversion',
                 'base/collections',
                 'base/featured',
+                'base/platforms',
                 'base/users',
                 'base/addon_5299_gcal',
                 'base/addon_3615',
@@ -1305,7 +1311,8 @@ class TestAddonGetURLPath(amo.tests.TestCase):
 
 
 class TestAddonModelsFeatured(amo.tests.TestCase):
-    fixtures = ['addons/featured', 'bandwagon/featured_collections',
+    fixtures = ['base/apps', 'base/appversion', 'base/users',
+                'addons/featured', 'bandwagon/featured_collections',
                 'base/addon_3615', 'base/collections', 'base/featured']
 
     def setUp(self):
@@ -1469,7 +1476,11 @@ class TestAddonRecommendations(amo.tests.TestCase):
 
 
 class TestAddonDependencies(amo.tests.TestCase):
-    fixtures = ['base/addon_5299_gcal',
+    fixtures = ['base/apps',
+                'base/appversion',
+                'base/platforms',
+                'base/users',
+                'base/addon_5299_gcal',
                 'base/addon_3615',
                 'base/addon_3723_listed',
                 'base/addon_6704_grapple',
@@ -1505,7 +1516,11 @@ class TestListedAddonTwoVersions(amo.tests.TestCase):
 
 
 class TestFlushURLs(amo.tests.TestCase):
-    fixtures = ['base/addon_5579',
+    fixtures = ['base/apps',
+                'base/appversion',
+                'base/platforms',
+                'base/users',
+                'base/addon_5579',
                 'base/previews',
                 'base/addon_4664_twitterbar',
                 'addons/persona']

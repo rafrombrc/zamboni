@@ -8,6 +8,7 @@ import urllib
 
 from django.conf import settings
 from django.contrib.sessions.middleware import SessionMiddleware
+from django.core.urlresolvers import is_valid_path
 from django.http import Http404, HttpResponsePermanentRedirect
 from django.middleware import common
 from django.shortcuts import redirect
@@ -119,13 +120,13 @@ class RemoveSlashMiddleware(object):
     def process_response(self, request, response):
         if (response.status_code == 404
             and request.path_info.endswith('/')
-            and not common._is_valid_path(request.path_info)
-            and common._is_valid_path(request.path_info[:-1])):
+            and not is_valid_path(request.path_info)
+            and is_valid_path(request.path_info[:-1])):
             # Use request.path because we munged app/locale in path_info.
             newurl = request.path[:-1]
             if request.GET:
                 with safe_query_string(request):
-                    newurl += '?' + request.META['QUERY_STRING']
+                    newurl += '?' + request.META.get('QUERY_STRING', '')
             return HttpResponsePermanentRedirect(newurl)
         else:
             return response
@@ -139,7 +140,7 @@ def safe_query_string(request):
     We need unicode so it can be combined with a reversed URL, but it has to be
     ascii to go in a Location header.  iri_to_uri seems like a good compromise.
     """
-    qs = request.META['QUERY_STRING']
+    qs = request.META.get('QUERY_STRING', '')
     try:
         request.META['QUERY_STRING'] = iri_to_uri(qs)
         yield

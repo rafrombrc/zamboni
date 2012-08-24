@@ -96,11 +96,13 @@ class TestHomepage(amo.tests.TestCase):
 
 
 class TestHomepageFeatures(amo.tests.TestCase):
-    fixtures = ['base/addon_3615',
+    fixtures = ['base/apps',
+                'base/appversion',
+                'base/users',
+                'base/addon_3615',
                 'base/collections',
                 'base/global-stats',
                 'base/featured',
-                'base/collections',
                 'addons/featured',
                 'bandwagon/featured_collections']
 
@@ -164,7 +166,7 @@ class TestPromobox(amo.tests.TestCase):
 
 
 class TestContributeInstalled(amo.tests.TestCase):
-    fixtures = ['base/addon_592']
+    fixtures = ['base/apps', 'base/appversion', 'base/addon_592']
 
     def setUp(self):
         self.addon = Addon.objects.get(pk=592)
@@ -1417,8 +1419,9 @@ class TestReportAbuse(amo.tests.TestCase):
 
 
 class TestMobile(amo.tests.MobileTest, amo.tests.TestCase):
-    fixtures = ['addons/featured', 'base/apps', 'base/addon_3615',
-                'base/featured', 'bandwagon/featured_collections']
+    fixtures = ['addons/featured', 'base/apps', 'base/users',
+                'base/addon_3615', 'base/featured',
+                'bandwagon/featured_collections']
 
 
 class TestMobileHome(TestMobile):
