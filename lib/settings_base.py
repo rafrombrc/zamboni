@@ -1128,17 +1128,19 @@ LOGGING = {
 }
 
 
-METLOG_CFG_TXT = """
-[metlog]
-sender_class = metlog.senders.StdOutSender
+METLOG_CONF = {
+    'logger': 'zamboni',
+    'sender': {
+        'class': 'metlog.senders.StdOutSender',
+    },
+    'plugins': {
+        'raven': ('metlog_raven.raven_plugin.config_plugin',
+                  {'sentry_project_id': 1}),
+    },
+}
 
-[metlog_plugin_cef]
-provider=metlog_raven.raven_plugin:config_plugin
-sentry_project_id=1
-"""
-
-from metlog.config import client_from_text_config
-METLOG_CLIENT = client_from_text_config(METLOG_CFG_TXT, 'metlog')
+from metlog.config import client_from_dict_config
+METLOG_CLIENT = client_from_dict_config(METLOG_CONF)
 
 CEF_PRODUCT = "amo"
 
