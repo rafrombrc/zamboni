@@ -1131,7 +1131,7 @@ LOGGING = {
 METLOG_CONF = {
     'logger': 'zamboni',
     'sender': {
-        'class': 'metlog.senders.StdOutSender',
+        'class': 'metlog.senders.DebugCaptureSender',
     },
 }
 
