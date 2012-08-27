@@ -27,7 +27,6 @@ from waffle.models import Flag, Sample, Switch
 
 import addons.search
 import amo
-import mkt.stats.search
 import stats.search
 from access.models import Group, GroupUser
 from addons.models import Addon, AddonCategory, Category, Persona
@@ -563,22 +562,14 @@ class ESTestCase(TestCase):
 
         addons.search.setup_mapping()
         stats.search.setup_indexes()
-        mkt.stats.search.setup_mkt_indexes()
+        if settings.MARKETPLACE:
+            import mkt.stats.search
+            mkt.stats.search.setup_mkt_indexes()
 
     @classmethod
     def setUpIndex(cls):
         cls.add_addons()
         cls.refresh()
-
-    @classmethod
-    def tearDownClass(cls):
-        # Delete everything in reverse-order of the foreign key dependencies.
-        models = (Platform, Category, File, ApplicationsVersions,
-                  Version, Translation, Addon, Collection, AppVersion,
-                  Application)
-        for model in models:
-            model.objects.all().delete()
-        super(ESTestCase, cls).tearDownClass()
 
     @classmethod
     def refresh(cls, index='default', timesleep=0):
