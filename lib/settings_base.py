@@ -1501,6 +1501,3 @@ SIMULATE_NAV_PAY = False
 
 # Set this to True if you want region stores (eg: marketplace).
 REGION_STORES = False
-
-
-SITE_URL = 'http://localhost:8000'
