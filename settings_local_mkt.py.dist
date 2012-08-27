@@ -1,5 +1,19 @@
 from mkt.settings import *
 
+DATABASES = {
+    'default': {
+        'NAME': 'zamboni',
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': 'localhost',
+        'PORT': '',
+        'USER': 'zamboni',
+        'PASSWORD': 'mypass',
+        'OPTIONS': {'init_command': 'SET storage_engine=InnoDB'},
+        'TEST_CHARSET': 'utf8',
+        'TEST_COLLATION': 'utf8_general_ci',
+    },
+}
+
 # This overrides what is in lib/settings_base
 # METLOG_CONF = {
 #     'logger': 'zamboni',
