@@ -69,10 +69,10 @@ DATABASES = {
     'default': {
         'NAME': 'zamboni',
         'ENGINE': 'django.db.backends.mysql',
-        'HOST': 'localhost',
+        'HOST': '',
         'PORT': '',
-        'USER': 'zamboni',
-        'PASSWORD': 'mypass',
+        'USER': '',
+        'PASSWORD': '',
         'OPTIONS': {'init_command': 'SET storage_engine=InnoDB'},
         'TEST_CHARSET': 'utf8',
         'TEST_COLLATION': 'utf8_general_ci',
@@ -1131,7 +1131,7 @@ LOGGING = {
 METLOG_CONF = {
     'logger': 'zamboni',
     'sender': {
-        'class': 'metlog.senders.StdOutSender',
+        'class': 'metlog.senders.DebugCaptureSender',
     },
 }
 
@@ -1501,6 +1501,3 @@ SIMULATE_NAV_PAY = False
 
 # Set this to True if you want region stores (eg: marketplace).
 REGION_STORES = False
-
-
-SITE_URL = 'http://localhost:8000'
