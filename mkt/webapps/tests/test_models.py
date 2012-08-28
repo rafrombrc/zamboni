@@ -20,6 +20,7 @@ from users.models import UserProfile
 from versions.models import Version
 
 import mkt
+from mkt.reviewers.models import RereviewQueue
 from mkt.submit.tests.test_views import BaseWebAppTest
 from mkt.webapps.models import AddonExcludedRegion, Webapp
 
@@ -254,15 +255,12 @@ class TestWebapp(TestCase):
     def test_package_helpers(self):
         app1 = app_factory()
         eq_(app1.is_packaged, False)
-        eq_(app1.has_packaged_files, False)
-        app2 = app_factory(file_kw=dict(is_packaged=True))
+        app2 = app_factory(is_packaged=True)
         eq_(app2.is_packaged, True)
-        eq_(app2.has_packaged_files, True)
 
     def test_package_no_version(self):
         webapp = Webapp.objects.create(manifest_url='http://foo.com')
         eq_(webapp.is_packaged, False)
-        eq_(webapp.has_packaged_files, False)
 
 
 class TestWebappVersion(amo.tests.TestCase):
@@ -784,3 +782,11 @@ class TestContentRatingsIn(amo.tests.WebappTestCase):
             eq_(self.app.content_ratings_in(region=region, category='games'),
                 [])
             eq_(self.app.content_ratings_in(region=region, category=cat), [])
+
+
+class TestQueue(amo.tests.WebappTestCase):
+
+    def test_in_queue(self):
+        assert not self.app.in_rereview_queue()
+        RereviewQueue.objects.create(addon=self.app)
+        assert self.app.in_rereview_queue()

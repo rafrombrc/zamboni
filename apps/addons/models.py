@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
 from django.dispatch import receiver
 from django.db.models import Q, Max, signals as dbsignals
@@ -279,14 +280,17 @@ class Addon(amo.models.OnChangeMixin, amo.models.ModelBase):
     _backup_version = models.ForeignKey(Version, related_name='___backup',
             db_column='backup_version', null=True, on_delete=models.SET_NULL)
     _latest_version = None
+    make_public = models.DateTimeField(null=True)
+    mozilla_contact = models.EmailField()
+
+    # Whether the app is packaged or not (aka hosted).
+    is_packaged = models.BooleanField(default=False, db_index=True)
 
     # This gets overwritten in the transformer.
     share_counts = collections.defaultdict(int)
 
     objects = AddonManager()
     with_deleted = AddonManager(include_deleted=True)
-    make_public = models.DateTimeField(null=True)
-    mozilla_contact = models.EmailField()
 
     class Meta:
         db_table = 'addons'
@@ -412,7 +416,7 @@ class Addon(amo.models.OnChangeMixin, amo.models.ModelBase):
         return True
 
     @classmethod
-    def from_upload(cls, upload, platforms):
+    def from_upload(cls, upload, platforms, is_packaged=False):
         from files.utils import parse_addon
         data = parse_addon(upload)
         fields = cls._meta.get_all_field_names()
@@ -425,6 +429,7 @@ class Addon(amo.models.OnChangeMixin, amo.models.ModelBase):
         if addon.is_webapp():
             addon.manifest_url = upload.name
             addon.app_domain = addon.domain_from_url(addon.manifest_url)
+            addon.is_packaged = is_packaged
         addon.save()
         Version.from_upload(upload, addon, platforms)
         amo.log(amo.LOG.CREATE_ADDON, addon)
@@ -726,8 +731,11 @@ class Addon(amo.models.OnChangeMixin, amo.models.ModelBase):
         "Returns the current_version field or updates it if needed."
         if self.type == amo.ADDON_PERSONA:
             return
-        if not self._current_version:
-            self.update_version()
+        try:
+            if not self._current_version:
+                self.update_version()
+        except ObjectDoesNotExist:
+            return
         return self._current_version
 
     @amo.cached_property
@@ -1357,6 +1365,14 @@ class Addon(amo.models.OnChangeMixin, amo.models.ModelBase):
         if not f:
             return False
         return f.uses_flash
+
+    def in_escalation_queue(self):
+        return self.escalationqueue_set.exists()
+
+    def in_rereview_queue(self):
+        # Rereview is part of marketplace and not AMO, so setting for False
+        # to avoid having to catch NotImplemented errors.
+        return False
 
 
 class AddonDeviceType(amo.models.ModelBase):

@@ -147,7 +147,7 @@ class TestReviewersHome(AppReviewerTest, AccessMixin):
 class FlagsMixin(object):
 
     def test_flag_packaged_app(self):
-        self.apps[0].get_latest_file().update(is_packaged=True)
+        self.apps[0].update(is_packaged=True)
         eq_(self.apps[0].is_packaged, True)
         r = self.client.get(self.url)
         eq_(r.status_code, 200)
@@ -570,6 +570,18 @@ class TestReviewApp(AppReviewerTest, AccessMixin):
         eq_(self.client.post(reverse('editors.review_viewing')).status_code,
             200)
 
+    @mock.patch('mkt.webapps.models.Webapp.in_rereview_queue')
+    def test_rereview(self, is_rereview_queue):
+        is_rereview_queue.return_value = True
+        content = pq(self.client.get(self.url).content)
+        assert content('#queue-rereview').length
+
+    @mock.patch('mkt.webapps.models.Webapp.in_escalation_queue')
+    def test_escalated(self, in_escalation_queue):
+        in_escalation_queue.return_value = True
+        content = pq(self.client.get(self.url).content)
+        assert content('#queue-escalation').length
+
     @mock.patch.object(settings, 'DEBUG', False)
     def test_cannot_review_my_app(self):
         AddonUser.objects.create(addon=self.app,
@@ -721,10 +733,9 @@ class TestReviewApp(AppReviewerTest, AccessMixin):
         self._check_email_body(msg)
 
     def test_multiple_versions_reject_packaged(self):
-        self.app.update(status=amo.STATUS_PUBLIC)
+        self.app.update(status=amo.STATUS_PUBLIC, is_packaged=True)
         self.app.current_version.files.update(status=amo.STATUS_PUBLIC)
-        new_version = version_factory(addon=self.app,
-                                      file_kw=dict(is_packaged=True))
+        new_version = version_factory(addon=self.app)
         new_version.files.all().update(status=amo.STATUS_PENDING)
         files = list(new_version.files.values_list('id', flat=True))
         self.post({
