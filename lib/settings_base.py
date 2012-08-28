@@ -1127,6 +1127,17 @@ LOGGING = {
     },
 }
 
+
+METLOG_CONF = {
+    'logger': 'zamboni',
+    'sender': {
+        'class': 'metlog.senders.DebugCaptureSender',
+    },
+}
+
+from metlog.config import client_from_dict_config
+METLOG_CLIENT = client_from_dict_config(METLOG_CONF)
+
 CEF_PRODUCT = "amo"
 
 # CSP Settings
