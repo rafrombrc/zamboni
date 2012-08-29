@@ -94,12 +94,6 @@ z.page.on('fragmentloaded', function() {
         $outer.animate({scrollTop: $outer.height()}, 1000);
     }));
 
-    // $header.on('focus.search', '#search-q', function() {
-    //     $('#search-go').show();
-    // }).blur('blur.search', '#search-q', function() {
-    //     $('#search-go').hide();
-    // });
-
     $(window).bind('overlay_dismissed', function() {
        $nav.removeClass('active');
     }).bind('app_install_mark', function(e, product) {
@@ -141,6 +135,10 @@ z.page.on('fragmentloaded', function() {
             $('#search-q').blur();
             $btns.blur();
         }
+
+        z.page.on('fragmentloaded', function() {
+            z.body.removeClass('show-search');
+        });
         e.preventDefault();
     });
 

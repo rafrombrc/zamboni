@@ -1,7 +1,7 @@
 {% if request.is_ajax() and not SKIP_FRAGMENT %}
   {% extends 'mkt/fragment.html' %}
 {% endif %}
-{% set logged = False %}
+{% set logged = request.user.is_authenticated() %}
 <!DOCTYPE html>
 <html lang="{{ LANG }}" dir="{{ DIR }}"
   {% if settings.USE_APPCACHE and OFFLINE_MANIFEST %}
@@ -30,7 +30,7 @@
           href="{{ MEDIA_URL }}img/mkt/logos/32.png" sizes="32x32">
 
     {% block site_css %}
-      {{ css('mkt/ecosystem') }}
+      {{ css('mkt/ecosystem', debug=request.GET.get('debug')) }}
     {% endblock %}
 
     {% block extrahead %}{% endblock %}
@@ -107,7 +107,7 @@
       </footer>
     {% endblock %}
 
-    {% if logged %}
+    {% if not logged %}
       <div id="login" class="overlay">
         <section>
           <div class="old">
@@ -150,7 +150,7 @@
         <script async defer src="https://login.persona.org/include.js"></script>
         <script type="text/javascript" src="{{ settings.RECAPTCHA_AJAX_URL }}"></script>
       {% endif %}
-      {{ js('mkt/consumer') }}
+      {{ js('mkt/consumer', debug=request.GET.get('debug')) }}
     {% endblock %}
 
     {% block js %}{% endblock %}
