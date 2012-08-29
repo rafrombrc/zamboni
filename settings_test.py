@@ -93,3 +93,14 @@ DEBUG_TOOLBAR_CONFIG = {
 
 MOZMARKET_VENDOR_EXCLUDE = []
 SECLUSION_HOSTS = ('http://localhost/',)
+
+
+METLOG_CONF = {
+    'logger': 'zamboni',
+    'sender': {
+        'class': 'metlog.senders.DebugCaptureSender',
+    },
+}
+
+from metlog.config import client_from_dict_config
+METLOG = client_from_dict_config(METLOG_CONF)

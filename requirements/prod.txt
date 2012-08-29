@@ -17,6 +17,7 @@ django-celery==2.0.2
 importlib==1.0.2
 django-uuidfield==0.1
 cef==0.2
+metlog-py==0.9.5
 
 -e git://github.com/jbalogh/django-multidb-router.git#egg=django-multidb-router
 -e git://github.com/jbalogh/django-cache-machine.git@0ca435683#egg=django-cache-machine
@@ -46,6 +47,3 @@ cef==0.2
 -e git://github.com/mozilla/django-piston.git#egg=django-piston
 
 -e git://github.com/mozilla/nuggets.git#egg=nuggets
-
-# Metlog-py
-metlog-py==0.9.4

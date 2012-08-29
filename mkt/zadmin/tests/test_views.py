@@ -22,16 +22,16 @@ class TestGenerateError(amo.tests.TestCase):
 
     def setUp(self):
         self.client.login(username='admin@mozilla.com', password='password')
-        self.metlog_client = settings.METLOG_CLIENT
-        self.metlog_client.sender.msgs.clear()
+        self.metlog = settings.METLOG
+        self.metlog.sender.msgs.clear()
 
     def test_metlog_statsd(self):
         self.url = reverse('zadmin.generate-error')
         resp = self.client.post(self.url,
                          {'error': 'metlog_statsd'})
 
-        eq_(len(self.metlog_client.sender.msgs), 1)
-        msg = json.loads(self.metlog_client.sender.msgs[0])
+        eq_(len(self.metlog.sender.msgs), 1)
+        msg = json.loads(self.metlog.sender.msgs[0])
 
         eq_(msg['severity'], 6)
         eq_(msg['logger'], 'zamboni')
@@ -45,8 +45,8 @@ class TestGenerateError(amo.tests.TestCase):
         resp = self.client.post(self.url,
                          {'error': 'metlog_json'})
 
-        eq_(len(self.metlog_client.sender.msgs), 1)
-        msg = json.loads(self.metlog_client.sender.msgs[0])
+        eq_(len(self.metlog.sender.msgs), 1)
+        msg = json.loads(self.metlog.sender.msgs[0])
 
         eq_(msg['type'], 'metlog_json')
         eq_(msg['logger'], 'zamboni')

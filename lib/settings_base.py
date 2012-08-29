@@ -1122,6 +1122,7 @@ LOGGING = {
         'suds': {'handlers': ['null']},
         'z.task': {'level': logging.INFO},
         'z.es': {'level': logging.INFO},
+        'z.metlog': {'level': logging.INFO},
         's.client': {'level': logging.INFO},
         'nose': {'level': logging.WARNING},
     },
@@ -1131,12 +1132,13 @@ LOGGING = {
 METLOG_CONF = {
     'logger': 'zamboni',
     'sender': {
-        'class': 'metlog.senders.DebugCaptureSender',
+        'class': 'metlog.senders.logging.StdLibLoggingSender',
+        'logger_name': 'z.metlog',
     },
 }
 
 from metlog.config import client_from_dict_config
-METLOG_CLIENT = client_from_dict_config(METLOG_CONF)
+METLOG = client_from_dict_config(METLOG_CONF)
 
 CEF_PRODUCT = "amo"
 

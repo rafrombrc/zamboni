@@ -295,7 +295,7 @@ class GenerateErrorForm(happyforms.Form):
                 pass
             raise IOError('request data read error')
         elif error == 'metlog_statsd':
-            settings.METLOG_CLIENT.incr(name=LOGGER_NAME)
+            settings.METLOG.incr(name=LOGGER_NAME)
         elif error == 'metlog_json':
-            settings.METLOG_CLIENT.metlog(type="metlog_json", fields={'foo': 'bar', 'secret': 42})
+            settings.METLOG.metlog(type="metlog_json", fields={'foo': 'bar', 'secret': 42})
 
